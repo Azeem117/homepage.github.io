@@ -24,13 +24,13 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         /* Custom scrollbar for settings panel */
-        #links-settings-container::-webkit-scrollbar {
+        .custom-scrollbar::-webkit-scrollbar {
             width: 5px;
         }
-        #links-settings-container::-webkit-scrollbar-track {
+        .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
-        #links-settings-container::-webkit-scrollbar-thumb {
+        .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #4a5568;
             border-radius: 10px;
         }
@@ -45,8 +45,8 @@
     <main class="relative z-10 flex flex-col h-full p-6 sm:p-8 justify-between">
 
         <!-- Top Section: Weather -->
-        <div class="w-full max-w-md mx-auto flex justify-start items-start text-sm">
-            <div id="weather-display" class="text-left">
+        <div class="w-full max-w-md mx-auto flex justify-end items-start text-sm">
+            <div id="weather-display" class="text-right">
                 <p id="weather-location" class="font-bold text-lg">Loading...</p>
                 <p id="weather-details" class="opacity-80">Fetching weather data</p>
             </div>
@@ -71,7 +71,7 @@
             <!-- Search Bar -->
             <form action="https://www.google.com/search" method="get" class="w-full group">
                 <div class="relative flex items-center">
-                     <svg class="w-5 h-5 absolute left-4 text-gray-300 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                     <svg class="w-5 h-5 absolute left-4 text-gray-300 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     <input type="text" name="q" placeholder="Search Google or type a URL"
                            class="w-full bg-gray-800 bg-opacity-70 border border-gray-700 rounded-full py-3 pr-4 pl-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-700 transition duration-300 placeholder-gray-400">
                 </div>
@@ -87,8 +87,13 @@
     </main>
 
     <!-- Settings Button -->
-    <button id="settings-btn" class="fixed bottom-6 right-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+    <button id="settings-btn" class="fixed top-6 left-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.48.398.665.996.405 1.525l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.405-1.525l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    </button>
+    
+    <!-- AI Access Button -->
+    <button id="ai-btn" class="fixed bottom-6 right-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.455-2.456L12.5 17.25l1.178-.398a3.375 3.375 0 002.455-2.456L16.5 13.5l.398 1.178a3.375 3.375 0 002.456 2.456l1.178.398-1.178.398a3.375 3.375 0 00-2.456 2.456z" /></svg>
     </button>
     
     <!-- Settings Panel -->
@@ -99,11 +104,24 @@
                 <button id="close-settings-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
             </div>
         </div>
-        <div id="links-settings-container" class="space-y-4 overflow-y-auto flex-grow pr-2">
+        <div id="links-settings-container" class="space-y-4 overflow-y-auto flex-grow pr-2 custom-scrollbar">
             <!-- JS will populate this -->
         </div>
         <div class="flex-shrink-0 pt-4">
             <button id="save-links-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Save Changes</button>
+        </div>
+    </div>
+    
+    <!-- AI Access Panel -->
+    <div id="ai-panel" class="fixed inset-y-0 right-0 w-full max-w-sm glassmorphic shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+        <div class="flex-shrink-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">AI Assistants</h2>
+                <button id="close-ai-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+        </div>
+        <div id="ai-links-container" class="space-y-3 overflow-y-auto flex-grow pr-2 custom-scrollbar">
+            <!-- AI Links will be populated here -->
         </div>
     </div>
 
@@ -119,6 +137,15 @@
             { name: 'Netflix', url: 'https://www.netflix.com' },
             { name: 'Spotify', url: 'https://www.spotify.com' }
         ];
+        
+        const AI_LINKS = [
+            { name: 'Gemini', url: 'https://gemini.google.com/' },
+            { name: 'ChatGPT', url: 'https://chat.openai.com/' },
+            { name: 'Grok', url: 'https://grok.x.ai/' },
+            { name: 'Perplexity', url: 'https://www.perplexity.ai/' },
+            { name: 'Claude', url: 'https://claude.ai/' }
+        ];
+
         let quickLinks = [];
 
         // --- Quick Links Functions ---
@@ -215,6 +242,44 @@
                 localStorage.setItem('quickLinks', JSON.stringify(quickLinks));
                 renderQuickLinks();
                 settingsPanel.classList.add('translate-x-full');
+            });
+        }
+        
+        // --- AI Panel Functions ---
+        function renderAILinks() {
+            const container = document.getElementById('ai-links-container');
+            if (!container) return;
+            container.innerHTML = '';
+            AI_LINKS.forEach(link => {
+                const domain = new URL(link.url).hostname;
+                const linkEl = document.createElement('a');
+                linkEl.href = link.url;
+                linkEl.target = "_blank";
+                linkEl.rel = "noopener noreferrer";
+                linkEl.className = "flex items-center gap-4 p-3 bg-gray-800 bg-opacity-70 rounded-lg hover:bg-gray-700 transition-colors";
+                linkEl.innerHTML = `
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" 
+                         onerror="this.onerror=null;this.src='https://placehold.co/32x32/374151/FFFFFF?text=${link.name.charAt(0)}';"
+                         alt="${link.name} logo" class="w-6 h-6 rounded-md">
+                    <span class="font-medium">${link.name}</span>
+                `;
+                container.appendChild(linkEl);
+            });
+        }
+        
+        function setupAIPanelListeners() {
+            const aiPanel = document.getElementById('ai-panel');
+            const aiBtn = document.getElementById('ai-btn');
+            const closeBtn = document.getElementById('close-ai-btn');
+
+            if (!aiPanel || !aiBtn || !closeBtn) return;
+
+            aiBtn.addEventListener('click', () => {
+                aiPanel.classList.remove('translate-x-full');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                aiPanel.classList.add('translate-x-full');
             });
         }
 
@@ -378,7 +443,9 @@
             getWeather(); 
             loadLinks();
             renderQuickLinks();
+            renderAILinks();
             setupSettingsListeners();
+            setupAIPanelListeners();
             setupCanvasAnimation();
             setInterval(updateClockAndDate, 1000); 
         });
