@@ -3,295 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Personal Homepage</title>
-    
+    <title>Browser Home</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Inter & Roboto Mono for clock -->
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         /* Custom styles */
         body {
             font-family: 'Inter', sans-serif;
-            color: #e5e7eb; /* A light gray for text */
-            overflow: hidden; /* Hide scrollbars */
+            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
         }
-
-        #background-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; /* Place it behind all content */
+        /* Style for the glassmorphism effect */
+        .glassmorphic {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .font-roboto-mono {
-             font-family: 'Roboto Mono', monospace;
+        /* Custom scrollbar for settings panel */
+        #links-settings-container::-webkit-scrollbar {
+            width: 5px;
         }
-
-        /* Glassmorphism effect */
-        .glass-effect {
-            background: rgba(31, 41, 55, 0.4); 
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.125);
+        #links-settings-container::-webkit-scrollbar-track {
+            background: transparent;
         }
-        
-        /* Style for quick links */
-        .quick-link {
-            background: rgba(55, 65, 81, 0.5); 
-            transition: all 0.3s ease;
-        }
-
-        .quick-link:hover {
-            background: rgba(75, 85, 99, 0.7);
-            transform: translateY(-4px); 
-        }
-
-        /* To-Do List styling */
-        .task-item.completed span {
-            text-decoration: line-through;
-            opacity: 0.5;
-        }
-        .task-item input:checked + span {
-             text-decoration: line-through;
-             opacity: 0.5;
-        }
-        
-        /* Panel Transitions */
-        #settings-panel.hidden, #todo-widget.hidden {
-            opacity: 0;
-            transform: translateY(-20px);
-            pointer-events: none;
-        }
-        #settings-panel, #todo-widget {
-            transition: opacity 0.3s ease, transform 0.3s ease;
+        #links-settings-container::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 10px;
         }
     </style>
 </head>
-<body class="bg-black">
+<body class="bg-black text-white overflow-hidden h-screen">
 
-    <!-- The animated background canvas -->
-    <canvas id="background-canvas"></canvas>
+    <!-- Animated Background -->
+    <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full z-0"></canvas>
 
-    <!-- To-Do List Button -->
-    <div id="todo-button" class="absolute top-6 left-6 text-gray-400 hover:text-white transition-colors cursor-pointer z-20">
-        <i data-lucide="check-square" class="w-7 h-7"></i>
-    </div>
+    <!-- Main Content -->
+    <main class="relative z-10 flex flex-col h-full p-6 sm:p-8 justify-between">
 
-    <!-- To-Do List Panel (hidden by default) -->
-    <div id="todo-widget" class="hidden absolute top-20 left-6 z-10 w-72 text-left">
-        <div class="glass-effect p-4 rounded-xl shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-white">To-Do List</h2>
-                <button id="close-todo-button" class="text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+        <!-- Top Section: Weather -->
+        <div class="w-full max-w-md mx-auto flex justify-start items-start text-sm">
+            <div id="weather-display" class="text-left">
+                <p id="weather-location" class="font-bold text-lg">Loading...</p>
+                <p id="weather-details" class="opacity-80">Fetching weather data</p>
             </div>
-            <form id="todo-form" class="flex mb-2">
-                <input type="text" id="todo-input" placeholder="Add a new task..." class="w-full bg-gray-800/50 text-sm p-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 p-2 rounded-r-lg">
-                    <i data-lucide="plus" class="w-5 h-5"></i>
-                </button>
-            </form>
-            <ul id="todo-list" class="max-h-48 overflow-y-auto pr-2">
-                <!-- Tasks will be injected by JS -->
-            </ul>
         </div>
-    </div>
 
-
-    <!-- Settings Icon -->
-    <div id="settings-button" class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors cursor-pointer z-20">
-        <i data-lucide="settings" class="w-7 h-7"></i>
-    </div>
-
-    <!-- Settings Panel (hidden by default) -->
-    <div id="settings-panel" class="hidden absolute top-20 right-6 z-10 w-72 text-left">
-        <div class="glass-effect p-4 rounded-xl shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-white">Settings</h2>
-                <button id="close-settings-button" class="text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <p class="text-gray-300">Customization options coming soon!</p>
-            <!-- Add settings controls here -->
-        </div>
-    </div>
-
-
-    <!-- Main content area -->
-    <main class="min-h-screen w-full flex items-center justify-center p-4">
-        <div class="glass-effect w-full max-w-4xl p-6 md:p-10 text-center shadow-2xl rounded-2xl">
-
-            <!-- Time and Date -->
-            <header class="mb-6">
-                <div id="clock" class="flex items-end justify-center text-7xl md:text-8xl font-bold text-white tracking-tighter leading-none mb-2 font-roboto-mono">
-                    <span id="hours">00</span>
-                    <span class="opacity-50 mx-1">:</span>
-                    <span id="minutes">00</span>
-                    <span class="opacity-50 mx-1">:</span>
-                    <span id="seconds" class="text-5xl md:text-6xl opacity-75">00</span>
-                    <span id="ampm" class="text-3xl md:text-4xl font-semibold ml-3 pb-2 font-sans">AM</span>
+        <!-- Middle Section: Clock, Date & Search -->
+        <div class="w-full max-w-md mx-auto flex flex-col items-center">
+            <!-- Clock -->
+            <div id="clock-display" class="flex items-end font-black mb-2 tracking-tighter drop-shadow-lg">
+                <span id="clock-time" class="text-7xl sm:text-8xl">10:37</span>
+                <div class="flex flex-col items-start leading-none pb-2 pl-2">
+                    <span id="clock-seconds" class="text-2xl sm:text-3xl opacity-70">45</span>
+                    <span id="clock-ampm" class="text-2xl sm:text-3xl opacity-70">PM</span>
                 </div>
-                <p id="date" class="text-lg md:text-xl text-gray-300">Saturday, August 30, 2025</p>
-            </header>
+            </div>
+
+            <!-- Date -->
+            <div class="text-center text-lg font-medium opacity-80 mb-6">
+                <span id="date-day">Saturday</span>, <span id="date-full">August 30</span>
+            </div>
 
             <!-- Search Bar -->
-            <section class="mb-6">
-                <form id="search-form" action="https://www.google.com/search" method="get" class="relative max-w-xl mx-auto">
-                    <input type="text" name="q" placeholder="Search with Google..." class="w-full py-3 px-5 text-lg bg-gray-700/50 border border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400">
-                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-                        <i data-lucide="search" class="w-6 h-6"></i>
-                    </button>
-                </form>
-            </section>
-
-            <!-- Quick Links -->
-            <section class="mb-4 max-w-md mx-auto">
-                <div class="grid grid-cols-4 gap-2">
-                    <a href="https://www.youtube.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="youtube" class="w-6 h-6 mb-1"></i><span class="text-xs">YouTube</span></a>
-                    <a href="https://www.github.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="github" class="w-6 h-6 mb-1"></i><span class="text-xs">GitHub</span></a>
-                    <a href="https://www.reddit.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="message-circle" class="w-6 h-6 mb-1"></i><span class="text-xs">Reddit</span></a>
-                    <a href="https://www.twitter.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="twitter" class="w-6 h-6 mb-1"></i><span class="text-xs">Twitter</span></a>
-                    <a href="https://mail.google.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="mail" class="w-6 h-6 mb-1"></i><span class="text-xs">Gmail</span></a>
-                    <a href="https://drive.google.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="folder-git-2" class="w-6 h-6 mb-1"></i><span class="text-xs">Drive</span></a>
-                    <a href="https://news.google.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="newspaper" class="w-6 h-6 mb-1"></i><span class="text-xs">News</span></a>
-                    <a href="https://www.linkedin.com" class="quick-link flex flex-col items-center justify-center p-2 rounded-lg aspect-square"><i data-lucide="linkedin" class="w-6 h-6 mb-1"></i><span class="text-xs">LinkedIn</span></a>
+            <form action="https://www.google.com/search" method="get" class="w-full group">
+                <div class="relative flex items-center">
+                     <svg class="w-5 h-5 absolute left-4 text-gray-300 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" name="q" placeholder="Search Google or type a URL"
+                           class="w-full bg-gray-800 bg-opacity-70 border border-gray-700 rounded-full py-3 pr-4 pl-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-700 transition duration-300 placeholder-gray-400">
                 </div>
-            </section>
-            
-            <!-- Weather Widget -->
-            <section>
-                <div class="inline-flex items-center space-x-4 bg-gray-700/50 py-2 px-6 rounded-full">
-                     <i data-lucide="map-pin" class="w-5 h-5 text-gray-300"></i>
-                    <span class="text-lg font-medium text-white">Noida, UP, India</span>
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="cloud-sun" class="w-7 h-7 text-yellow-300"></i>
-                        <span class="text-xl font-semibold text-white">29°C</span>
-                    </div>
-                </div>
-            </section>
+            </form>
+        </div>
 
+        <!-- Bottom Section: Quick Links -->
+        <div class="w-full max-w-md mx-auto">
+            <div id="quick-links-grid" class="grid grid-cols-4 gap-4">
+                <!-- Links will be dynamically inserted here -->
+            </div>
         </div>
     </main>
 
+    <!-- Settings Button -->
+    <button id="settings-btn" class="fixed bottom-6 right-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.48.398.665.996.405 1.525l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.405-1.525l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    </button>
+    
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="fixed inset-y-0 right-0 w-full max-w-sm glassmorphic shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+        <div class="flex-shrink-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Customize Links</h2>
+                <button id="close-settings-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+        </div>
+        <div id="links-settings-container" class="space-y-4 overflow-y-auto flex-grow pr-2">
+            <!-- JS will populate this -->
+        </div>
+        <div class="flex-shrink-0 pt-4">
+            <button id="save-links-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Save Changes</button>
+        </div>
+    </div>
+
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Icon Replacement ---
-            lucide.createIcons();
+        const DEFAULT_LINKS = [
+            { name: 'YouTube', url: 'https://www.youtube.com' },
+            { name: 'Reddit', url: 'https://www.reddit.com' },
+            { name: 'Amazon', url: 'https://www.amazon.com' },
+            { name: 'GitHub', url: 'https://www.github.com' },
+            { name: 'Twitter', url: 'https://www.twitter.com' },
+            { name: 'Gmail', url: 'https://mail.google.com' },
+            { name: 'Netflix', url: 'https://www.netflix.com' },
+            { name: 'Spotify', url: 'https://www.spotify.com' }
+        ];
+        let quickLinks = [];
 
-            // --- Clock and Date ---
-            const hoursEl = document.getElementById('hours');
-            const minutesEl = document.getElementById('minutes');
-            const secondsEl = document.getElementById('seconds');
-            const ampmEl = document.getElementById('ampm');
-            const dateEl = document.getElementById('date');
+        // --- Quick Links Functions ---
+        function renderQuickLinks() {
+            const grid = document.getElementById('quick-links-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            quickLinks.slice(0, 8).forEach(link => { // Ensure only 8 links are rendered
+                if (!link || !link.url) return;
+                
+                const linkUrl = link.url.startsWith('http') ? link.url : `https://${link.url}`;
+                const domain = new URL(linkUrl).hostname;
 
-            function updateTime() {
-                const now = new Date();
-                let hours = now.getHours();
-                const minutes = now.getMinutes();
-                const seconds = now.getSeconds();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12;
-                hours = hours ? hours : 12; 
-                hoursEl.textContent = hours < 10 ? '0' + hours : hours;
-                minutesEl.textContent = minutes < 10 ? '0' + minutes : minutes;
-                secondsEl.textContent = seconds < 10 ? '0' + seconds : seconds;
-                ampmEl.textContent = ampm;
-                dateEl.textContent = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const linkEl = document.createElement('a');
+                linkEl.href = linkUrl;
+                linkEl.className = "flex flex-col items-center justify-center p-2 glassmorphic rounded-xl aspect-square transition-transform duration-200 hover:scale-110 active:scale-95";
+                linkEl.target = "_blank";
+                linkEl.rel = "noopener noreferrer";
+
+                linkEl.innerHTML = `
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" 
+                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/374151/FFFFFF?text=${link.name.charAt(0)}';"
+                         alt="${link.name}" 
+                         class="w-6 h-6 object-contain rounded-md">
+                    <span class="text-xs mt-1 opacity-80 truncate w-full text-center">${link.name}</span>
+                `;
+                grid.appendChild(linkEl);
+            });
+        }
+
+        function renderSettingsForm() {
+            const container = document.getElementById('links-settings-container');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const link = quickLinks[i] || { name: '', url: '' };
+                const itemEl = document.createElement('div');
+                itemEl.className = "p-3 bg-gray-800 rounded-lg";
+                itemEl.innerHTML = `
+                    <label class="text-sm font-medium text-gray-400">Link ${i + 1}</label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="text" value="${link.name}" class="link-name-input w-1/3 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Name">
+                        <input type="url" value="${link.url}" class="link-url-input w-2/3 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="https://example.com">
+                    </div>
+                `;
+                container.appendChild(itemEl);
             }
-            updateTime();
-            setInterval(updateTime, 1000);
-
-            // --- Settings Panel Logic ---
-            const settingsButton = document.getElementById('settings-button');
-            const closeSettingsButton = document.getElementById('close-settings-button');
-            const settingsPanel = document.getElementById('settings-panel');
-            settingsButton.addEventListener('click', () => settingsPanel.classList.toggle('hidden'));
-            closeSettingsButton.addEventListener('click', () => settingsPanel.classList.add('hidden'));
-
-            // --- To-Do List Panel Logic ---
-            const todoButton = document.getElementById('todo-button');
-            const closeTodoButton = document.getElementById('close-todo-button');
-            const todoWidget = document.getElementById('todo-widget');
-            todoButton.addEventListener('click', () => todoWidget.classList.toggle('hidden'));
-            closeTodoButton.addEventListener('click', () => todoWidget.classList.add('hidden'));
-
-            // --- To-Do List Functionality ---
-            const todoForm = document.getElementById('todo-form');
-            const todoInput = document.getElementById('todo-input');
-            const todoList = document.getElementById('todo-list');
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-            const saveTasks = () => localStorage.setItem('tasks', JSON.stringify(tasks));
-
-            const renderTasks = () => {
-                todoList.innerHTML = '';
-                tasks.forEach((task, index) => {
-                    const li = document.createElement('li');
-                    li.className = `task-item flex items-center justify-between p-1 rounded-md hover:bg-gray-700/50 ${task.completed ? 'completed' : ''}`;
-                    li.innerHTML = `
-                        <label class="flex items-center cursor-pointer w-full">
-                            <input type="checkbox" class="form-checkbox h-4 w-4 bg-gray-800 border-gray-600 rounded text-blue-500 focus:ring-0" ${task.completed ? 'checked' : ''}>
-                            <span class="ml-2 text-sm">${task.text}</span>
-                        </label>
-                        <button class="delete-task text-gray-500 hover:text-red-500 flex-shrink-0">&times;</button>
-                    `;
-                    li.querySelector('input').addEventListener('change', () => {
-                        tasks[index].completed = !tasks[index].completed;
-                        saveTasks();
-                        renderTasks();
-                    });
-                    li.querySelector('.delete-task').addEventListener('click', () => {
-                        tasks.splice(index, 1);
-                        saveTasks();
-                        renderTasks();
-                    });
-                    todoList.appendChild(li);
-                });
-            };
-
-            todoForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const text = todoInput.value.trim();
-                if (text) {
-                    tasks.push({ text, completed: false });
-                    todoInput.value = '';
-                    saveTasks();
-                    renderTasks();
+        }
+        
+        function loadLinks() {
+            try {
+                const savedLinks = localStorage.getItem('quickLinks');
+                if (savedLinks) {
+                    quickLinks = JSON.parse(savedLinks);
+                } else {
+                    quickLinks = DEFAULT_LINKS;
                 }
+            } catch (e) {
+                console.error("Could not load links from localStorage", e);
+                quickLinks = DEFAULT_LINKS;
+            }
+        }
+        
+        function setupSettingsListeners() {
+            const settingsPanel = document.getElementById('settings-panel');
+            const settingsBtn = document.getElementById('settings-btn');
+            const closeBtn = document.getElementById('close-settings-btn');
+            const saveBtn = document.getElementById('save-links-btn');
+
+            if (!settingsPanel || !settingsBtn || !closeBtn || !saveBtn) return;
+
+            settingsBtn.addEventListener('click', () => {
+                renderSettingsForm();
+                settingsPanel.classList.remove('translate-x-full');
             });
 
-            renderTasks();
+            closeBtn.addEventListener('click', () => {
+                settingsPanel.classList.add('translate-x-full');
+            });
 
-            // --- Canvas Animation ---
+            saveBtn.addEventListener('click', () => {
+                const nameInputs = document.querySelectorAll('.link-name-input');
+                const urlInputs = document.querySelectorAll('.link-url-input');
+
+                const newLinks = [];
+                for (let i = 0; i < nameInputs.length; i++) {
+                    newLinks.push({
+                        name: nameInputs[i].value,
+                        url: urlInputs[i].value
+                    });
+                }
+
+                quickLinks = newLinks;
+                localStorage.setItem('quickLinks', JSON.stringify(quickLinks));
+                renderQuickLinks();
+                settingsPanel.classList.add('translate-x-full');
+            });
+        }
+
+
+        // --- Main Update Function ---
+        function updateClockAndDate() {
+            const now = new Date();
+            const clockTimeEl = document.getElementById('clock-time');
+            const clockSecondsEl = document.getElementById('clock-seconds');
+            const clockAmPmEl = document.getElementById('clock-ampm');
+            const dateDayEl = document.getElementById('date-day');
+            const dateFullEl = document.getElementById('date-full');
+
+            // --- Clock Update ---
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            
+            clockTimeEl.textContent = `${hours}:${minutes}`;
+            clockSecondsEl.textContent = seconds;
+            clockAmPmEl.textContent = ampm;
+
+
+            // --- Date Update ---
+            const dayOptions = { weekday: 'long' };
+            const dateOptions = { month: 'long', day: 'numeric' };
+            if (dateDayEl) dateDayEl.textContent = now.toLocaleDateString('en-US', dayOptions);
+            if (dateFullEl) dateFullEl.textContent = now.toLocaleDateString('en-US', dateOptions);
+        }
+
+        // --- Weather Function ---
+        function getWeather() {
+            const apiKey = "YOUR_API_KEY"; // Replace with your OpenWeatherMap API key
+
+            const locationEl = document.getElementById('weather-location');
+            const detailsEl = document.getElementById('weather-details');
+
+            const success = (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Weather data not available.');
+                        return response.json();
+                    })
+                    .then(data => {
+                        locationEl.textContent = `${data.name}, ${data.sys.country}`;
+                        detailsEl.textContent = `${data.weather[0].main}, ${Math.round(data.main.temp)}°C`;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching weather:', error);
+                        detailsEl.textContent = 'Weather Unavailable';
+                    });
+            };
+
+            const error = () => {
+                locationEl.textContent = 'Location Off';
+                detailsEl.textContent = 'Enable location for weather';
+            };
+            
+            if (apiKey === "YOUR_API_KEY" || !apiKey) {
+                 locationEl.textContent = 'Weather';
+                 detailsEl.textContent = 'Add API Key';
+                 return;
+            }
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(success, error);
+            } else {
+                error();
+            }
+        }
+
+        // --- Canvas Animation ---
+        function setupCanvasAnimation() {
             const canvas = document.getElementById('background-canvas');
+            if (!canvas) return;
+            
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             let particlesArray;
-
-            let mouse = { x: null, y: null, radius: (canvas.height / 100) * (canvas.width / 100) };
-            
-            window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
-            window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
-            window.addEventListener('resize', () => {
-                canvas.width = innerWidth;
-                canvas.height = innerHeight;
-                mouse.radius = ((canvas.height / 100) * (canvas.width / 100));
-                init();
-            });
 
             class Particle {
                 constructor(x, y, dX, dY, size, color) {
@@ -306,30 +317,22 @@
                 update() {
                     if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
                     if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    if (Math.sqrt(dx * dx + dy * dy) < mouse.radius + this.size) {
-                        if (mouse.x < this.x && this.x < canvas.width - this.size * 10) this.x += 5;
-                        if (mouse.x > this.x && this.x > this.size * 10) this.x -= 5;
-                        if (mouse.y < this.y && this.y < canvas.height - this.size * 10) this.y += 5;
-                        if (mouse.y > this.y && this.y > this.size * 10) this.y -= 5;
-                    }
                     this.x += this.directionX;
                     this.y += this.directionY;
                     this.draw();
                 }
             }
-            
+
             function init() {
                 particlesArray = [];
                 let num = (canvas.height * canvas.width) / 9000;
-                for (let i = 0; i < num; i++) {
-                    let size = (Math.random() * 2) + 1;
+                for (let i = 0; i < num * 0.5; i++) { // Reduced particle count for subtlety
+                    let size = (Math.random() * 1.5) + 0.5;
                     let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
                     let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
-                    let dX = (Math.random() * 0.4) - 0.2;
-                    let dY = (Math.random() * 0.4) - 0.2;
-                    let color = 'rgba(255, 255, 255, 0.7)';
+                    let dX = (Math.random() * 0.3) - 0.15;
+                    let dY = (Math.random() * 0.3) - 0.15;
+                    let color = 'rgba(255, 255, 255, 0.5)';
                     particlesArray.push(new Particle(x, y, dX, dY, size, color));
                 }
             }
@@ -340,15 +343,15 @@
                 particlesArray.forEach(p => p.update());
                 connect();
             }
-            
+
             function connect() {
                 let opacityValue = 1;
                 for (let a = 0; a < particlesArray.length; a++) {
                     for (let b = a; b < particlesArray.length; b++) {
                         let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
-                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                        if (distance < (canvas.width / 9) * (canvas.height / 9)) {
                             opacityValue = 1 - (distance / 20000);
-                            ctx.strokeStyle = `rgba(255, 255, 255, ${opacityValue})`;
+                            ctx.strokeStyle = `rgba(220, 220, 220, ${opacityValue * 0.3})`;
                             ctx.lineWidth = 1;
                             ctx.beginPath();
                             ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -359,10 +362,29 @@
                 }
             }
             
+            window.addEventListener('resize', () => {
+                canvas.width = innerWidth;
+                canvas.height = innerHeight;
+                init();
+            });
+            
             init();
             animate();
+        }
+
+        // --- Initial Load & Interval ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateClockAndDate(); 
+            getWeather(); 
+            loadLinks();
+            renderQuickLinks();
+            setupSettingsListeners();
+            setupCanvasAnimation();
+            setInterval(updateClockAndDate, 1000); 
         });
     </script>
+
 </body>
 </html>
+
 
