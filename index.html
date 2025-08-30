@@ -23,7 +23,7 @@
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Custom scrollbar */
+        /* Custom scrollbar for settings panel */
         .custom-scrollbar::-webkit-scrollbar {
             width: 5px;
         }
@@ -34,21 +34,6 @@
             background: #4a5568;
             border-radius: 10px;
         }
-        /* Typing animation for loading */
-        .loading-dot {
-            animation: blink 1.4s infinite both;
-        }
-        .loading-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .loading-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        @keyframes blink {
-            0% { opacity: 0.2; }
-            20% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
     </style>
 </head>
 <body class="bg-black text-white overflow-hidden h-screen">
@@ -57,9 +42,10 @@
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full z-0"></canvas>
 
     <!-- Main Content -->
-    <main class="relative z-10 flex flex-col h-full p-4 sm:p-6 md:p-8 justify-between">
+    <main class="relative z-10 flex flex-col h-full p-6 sm:p-8 justify-between">
+
         <!-- Top Section: Weather -->
-        <div class="w-full max-w-2xl mx-auto flex justify-end items-start text-sm">
+        <div class="w-full max-w-md mx-auto flex justify-end items-start text-sm">
             <div id="weather-display" class="text-right">
                 <p id="weather-location" class="font-bold text-lg">Loading...</p>
                 <p id="weather-details" class="opacity-80">Fetching weather data</p>
@@ -67,81 +53,51 @@
         </div>
 
         <!-- Middle Section: Clock, Date & Search -->
-        <div class="w-full max-w-2xl mx-auto flex flex-col items-center">
+        <div class="w-full max-w-md mx-auto flex flex-col items-center">
             <!-- Clock -->
             <div id="clock-display" class="flex items-end font-black mb-2 tracking-tighter drop-shadow-lg">
-                <span id="clock-time" class="text-6xl sm:text-7xl md:text-8xl">10:37</span>
-                <div class="flex flex-col items-start leading-none pb-1 pl-1 sm:pb-2 sm:pl-2">
-                    <span id="clock-seconds" class="text-xl sm:text-2xl md:text-3xl opacity-70">45</span>
-                    <span id="clock-ampm" class="text-xl sm:text-2xl md:text-3xl opacity-70">PM</span>
+                <span id="clock-time" class="text-7xl sm:text-8xl">10:37</span>
+                <div class="flex flex-col items-start leading-none pb-2 pl-2">
+                    <span id="clock-seconds" class="text-2xl sm:text-3xl opacity-70">45</span>
+                    <span id="clock-ampm" class="text-2xl sm:text-3xl opacity-70">PM</span>
                 </div>
             </div>
 
             <!-- Date -->
-            <div class="text-center text-base sm:text-lg font-medium opacity-80 mb-6">
+            <div class="text-center text-lg font-medium opacity-80 mb-6">
                 <span id="date-day">Saturday</span>, <span id="date-full">August 30</span>
             </div>
 
-            <!-- Gemini Search Bar -->
-            <div class="w-full bg-gray-900 bg-opacity-80 border border-gray-700 rounded-full flex items-center p-2 shadow-lg">
-                <svg class="w-5 h-5 mx-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="search-input" placeholder="Ask Gemini..."
-                       class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none">
-                <button id="search-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base">
-                    Search
-                </button>
-            </div>
+            <!-- Search Bar -->
+            <form action="https://www.google.com/search" method="get" class="w-full group">
+                <div class="relative flex items-center">
+                     <svg class="w-5 h-5 absolute left-4 text-gray-300 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" name="q" placeholder="Search Google or type a URL"
+                           class="w-full bg-gray-800 bg-opacity-70 border border-gray-700 rounded-full py-3 pr-4 pl-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-700 transition duration-300 placeholder-gray-400">
+                </div>
+            </form>
         </div>
 
         <!-- Bottom Section: Quick Links -->
-        <div class="w-full max-w-2xl mx-auto">
-            <div id="quick-links-grid" class="grid grid-cols-4 gap-2 sm:gap-4">
+        <div class="w-full max-w-md mx-auto">
+            <div id="quick-links-grid" class="grid grid-cols-4 gap-4">
                 <!-- Links will be dynamically inserted here -->
             </div>
         </div>
     </main>
-    
-    <!-- Gemini Response Modal -->
-    <div id="gemini-modal" class="fixed inset-0 z-40 items-center justify-center p-4 hidden">
-        <div id="gemini-modal-backdrop" class="fixed inset-0 bg-black bg-opacity-50"></div>
-        <div class="w-full max-w-2xl glassmorphic rounded-2xl shadow-2xl relative z-50 flex flex-col max-h-[80vh]">
-            <div class="flex justify-between items-center p-4 border-b border-gray-700">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.455-2.456L12.5 17.25l1.178-.398a3.375 3.375 0 002.455-2.456L16.5 13.5l.398 1.178a3.375 3.375 0 002.456 2.456l1.178.398-1.178.398a3.375 3.375 0 00-2.456 2.456z" /></svg>
-                    <span>Response</span>
-                </h2>
-                <button id="close-gemini-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
-            </div>
-            <div id="gemini-response-content" class="p-4 sm:p-6 overflow-y-auto custom-scrollbar space-y-4">
-                 <!-- Loading state -->
-                <div id="gemini-loading" class="flex justify-center items-center py-10">
-                    <div class="flex items-center space-x-2">
-                         <span class="text-gray-400">Thinking</span>
-                         <div class="loading-dot w-2 h-2 bg-gray-400 rounded-full"></div>
-                         <div class="loading-dot w-2 h-2 bg-gray-400 rounded-full"></div>
-                         <div class="loading-dot w-2 h-2 bg-gray-400 rounded-full"></div>
-                    </div>
-                </div>
-                <!-- Response will be populated here -->
-                <p id="gemini-text"></p>
-                <div id="gemini-sources" class="space-y-2 pt-4 border-t border-gray-700"></div>
-            </div>
-        </div>
-    </div>
-
 
     <!-- Settings Button -->
-    <button id="settings-btn" class="fixed top-4 left-4 sm:top-6 sm:left-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+    <button id="settings-btn" class="fixed top-6 left-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.48.398.665.996.405 1.525l-1.296 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 01-.405-1.525l1.296-2.247a1.125 1.125 0 011.37-.49l1.217.456c.355.133.75.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.213-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
     </button>
     
     <!-- AI Access Button -->
-    <button id="ai-btn" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
+    <button id="ai-btn" class="fixed bottom-6 right-6 z-20 glassmorphic rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.572L16.5 21.75l-.398-1.178a3.375 3.375 0 00-2.455-2.456L12.5 17.25l1.178-.398a3.375 3.375 0 002.455-2.456L16.5 13.5l.398 1.178a3.375 3.375 0 002.456 2.456l1.178.398-1.178.398a3.375 3.375 0 00-2.456 2.456z" /></svg>
     </button>
     
     <!-- Settings Panel -->
-    <div id="settings-panel" class="fixed inset-y-0 right-0 w-full sm:max-w-sm glassmorphic shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+    <div id="settings-panel" class="fixed inset-y-0 right-0 w-full max-w-sm glassmorphic shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
         <div class="flex-shrink-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Customize Links</h2>
@@ -157,7 +113,7 @@
     </div>
     
     <!-- AI Access Panel -->
-    <div id="ai-panel" class="fixed inset-y-0 right-0 w-full sm:max-w-sm glassmorphic shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
+    <div id="ai-panel" class="fixed inset-y-0 right-0 w-full max-w-sm glassmorphic shadow-2xl z-30 transform translate-x-full transition-transform duration-300 ease-in-out p-6 flex flex-col">
         <div class="flex-shrink-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">AI Assistants</h2>
@@ -192,115 +148,12 @@
 
         let quickLinks = [];
 
-        // --- Gemini API Function ---
-        async function callGeminiAPI(query) {
-            const apiKey = ""; // Leave blank
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ parts: [{ text: query }] }],
-                tools: [{ "google_search": {} }],
-            };
-            
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    const text = candidate.content.parts[0].text;
-                    let sources = [];
-                    const groundingMetadata = candidate.groundingMetadata;
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        sources = groundingMetadata.groundingAttributions
-                            .map(attr => ({ uri: attr.web?.uri, title: attr.web?.title }))
-                            .filter(source => source.uri && source.title);
-                    }
-                    return { text, sources };
-                } else {
-                    return { text: "Sorry, I couldn't find an answer for that. Please try another question.", sources: [] };
-                }
-            } catch (error) {
-                console.error("Error calling Gemini API:", error);
-                return { text: "An error occurred while fetching the answer. Please check the console for details.", sources: [] };
-            }
-        }
-
-        // --- Gemini Modal Functions ---
-        function setupGeminiModal() {
-            const searchBtn = document.getElementById('search-btn');
-            const searchInput = document.getElementById('search-input');
-            const modal = document.getElementById('gemini-modal');
-            const closeModalBtn = document.getElementById('close-gemini-modal');
-            const backdrop = document.getElementById('gemini-modal-backdrop');
-            const loadingEl = document.getElementById('gemini-loading');
-            const textEl = document.getElementById('gemini-text');
-            const sourcesEl = document.getElementById('gemini-sources');
-            
-            const showModal = () => modal.classList.replace('hidden', 'flex');
-            const hideModal = () => modal.classList.replace('flex', 'hidden');
-
-            const handleSearch = async () => {
-                const query = searchInput.value.trim();
-                if (!query) return;
-
-                showModal();
-                loadingEl.style.display = 'flex';
-                textEl.textContent = '';
-                sourcesEl.innerHTML = '';
-                
-                const result = await callGeminiAPI(query);
-
-                loadingEl.style.display = 'none';
-                textEl.textContent = result.text;
-
-                if (result.sources.length > 0) {
-                    sourcesEl.innerHTML = '<h3 class="font-bold text-sm text-gray-300">Sources:</h3>';
-                    const sourceList = document.createElement('ul');
-                    sourceList.className = 'list-decimal list-inside space-y-2';
-                    result.sources.forEach(source => {
-                        const li = document.createElement('li');
-                        li.className = "text-sm";
-                        const a = document.createElement('a');
-                        a.href = source.uri;
-                        a.textContent = source.title;
-                        a.target = '_blank';
-                        a.rel = 'noopener noreferrer';
-                        a.className = 'text-blue-400 hover:underline';
-                        li.appendChild(a);
-                        sourceList.appendChild(li);
-                    });
-                    sourcesEl.appendChild(sourceList);
-                }
-                 searchInput.value = '';
-            };
-
-            searchBtn.addEventListener('click', handleSearch);
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSearch();
-                }
-            });
-            closeModalBtn.addEventListener('click', hideModal);
-            backdrop.addEventListener('click', hideModal);
-        }
-
         // --- Quick Links Functions ---
         function renderQuickLinks() {
             const grid = document.getElementById('quick-links-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            quickLinks.slice(0, 8).forEach(link => { 
+            quickLinks.slice(0, 8).forEach(link => { // Ensure only 8 links are rendered
                 if (!link || !link.url) return;
                 
                 const linkUrl = link.url.startsWith('http') ? link.url : `https://${link.url}`;
@@ -430,6 +283,7 @@
             });
         }
 
+
         // --- Main Update Function ---
         function updateClockAndDate() {
             const now = new Date();
@@ -452,6 +306,7 @@
             clockSecondsEl.textContent = seconds;
             clockAmPmEl.textContent = ampm;
 
+
             // --- Date Update ---
             const dayOptions = { weekday: 'long' };
             const dateOptions = { month: 'long', day: 'numeric' };
@@ -461,7 +316,7 @@
 
         // --- Weather Function ---
         function getWeather() {
-            const apiKey = ""; // Replace with your OpenWeatherMap API key
+            const apiKey = "YOUR_API_KEY"; // Replace with your OpenWeatherMap API key
 
             const locationEl = document.getElementById('weather-location');
             const detailsEl = document.getElementById('weather-details');
@@ -493,7 +348,7 @@
             
             if (apiKey === "YOUR_API_KEY" || !apiKey) {
                  locationEl.textContent = 'Weather';
-                 detailsEl.textContent = 'API Key needed';
+                 detailsEl.textContent = 'Add API Key';
                  return;
             }
 
@@ -536,7 +391,7 @@
             function init() {
                 particlesArray = [];
                 let num = (canvas.height * canvas.width) / 9000;
-                for (let i = 0; i < num * 0.5; i++) { // Reduced particle count
+                for (let i = 0; i < num * 0.5; i++) { // Reduced particle count for subtlety
                     let size = (Math.random() * 1.5) + 0.5;
                     let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
                     let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
@@ -591,7 +446,6 @@
             renderAILinks();
             setupSettingsListeners();
             setupAIPanelListeners();
-            setupGeminiModal();
             setupCanvasAnimation();
             setInterval(updateClockAndDate, 1000); 
         });
