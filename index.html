@@ -1,132 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alpha Homepage</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      transition: background 0.5s ease;
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(10px);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyBrowser Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6; /* gray-100 */
+            --card-bg-color: #ffffff; /* white */
+            --text-color: #111827; /* gray-900 */
+            --text-secondary-color: #6b7280; /* gray-500 */
+            --accent-color: #3b82f6; /* blue-500 */
+            --border-color: #e5e7eb; /* gray-200 */
+            --action-bar-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        html.dark {
+            --bg-color: #111827; /* gray-900 */
+            --card-bg-color: #1f2937; /* gray-800 */
+            --text-color: #f9fafb; /* gray-50 */
+            --text-secondary-color: #9ca3af; /* gray-400 */
+            --accent-color: #60a5fa; /* blue-400 */
+            --border-color: #374151; /* gray-700 */
+            --action-bar-bg: rgba(31, 41, 55, 0.85);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overscroll-behavior-y: contain; /* Prevents pull-to-refresh of the browser itself */
+        }
+
+        /* Custom Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Draggable item styles */
+        .dragging {
+            opacity: 0.5;
+            background-color: var(--accent-color) !important;
+            color: white !important;
+        }
+        .drag-over {
+            border-top: 2px solid var(--accent-color);
+        }
+
+        /* Transitions for smooth theme and layout changes */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+        }
+
+        /* Swipe to dismiss animation */
+        .swipe-out {
+            transform: translateX(100%) scale(0.8);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+    </style>
 </head>
-<body class="text-gray-900 flex flex-col min-h-screen">
+<body class="pb-24 overflow-x-hidden">
 
-  <!-- Top Bar -->
-  <div class="flex items-center justify-between px-4 py-3 glass shadow-md">
-    <h1 class="text-lg font-semibold">Alpha</h1>
-    <button id="toggleBg" class="text-xs px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300">
-      Switch Background
-    </button>
-  </div>
+    <!-- Top Section: Omnibox -->
+    <header class="p-4 pt-6">
+        <div class="flex items-center w-full bg-[var(--card-bg-color)] rounded-full shadow-sm border border-[var(--border-color)] px-4 py-2.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary-color)]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Search or type URL" class="w-full bg-transparent text-[var(--text-color)] placeholder-[var(--text-secondary-color)] focus:outline-none ml-3 mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary-color)] cursor-pointer"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        </div>
+    </header>
 
-  <!-- Main Content -->
-  <div class="flex-1 flex flex-col items-center justify-start pt-10 px-4">
+    <!-- Main Content: Smart Grid -->
+    <main id="smartGrid" class="px-4 space-y-6">
+        
+        <!-- Section Header with Edit button -->
+        <div class="flex justify-between items-center pt-2">
+            <h1 class="text-2xl font-bold text-[var(--text-color)]">Good Afternoon</h1>
+            <button id="editGridBtn" class="text-sm font-medium text-[var(--accent-color)] rounded-full px-4 py-1.5 bg-[var(--card-bg-color)] border border-[var(--border-color)]">Edit</button>
+        </div>
 
-    <!-- Search Box -->
-    <div class="w-full max-w-md glass rounded-full shadow-md flex items-center px-4 py-3">
-      <img src="https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico" class="w-5 h-5" alt="Bing">
-      <input 
-        type="text" 
-        placeholder="Search the web" 
-        class="ml-3 w-full bg-transparent outline-none text-sm"
-        onkeypress="if(event.key==='Enter'){window.location='https://www.bing.com/search?q='+this.value}"
-      />
+        <!-- Quick Links -->
+        <section id="quick-links" class="draggable-section" draggable="true">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="font-semibold text-[var(--text-color)]">Quick Links</h2>
+                <div class="handle hidden cursor-move text-[var(--text-secondary-color)]">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-4 text-center">
+                <!-- Links will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- Continue Browsing -->
+        <section id="continue-browsing" class="draggable-section" draggable="true">
+             <div class="flex justify-between items-center mb-2">
+                <h2 class="font-semibold text-[var(--text-color)]">Continue Browsing</h2>
+                <div class="handle hidden cursor-move text-[var(--text-secondary-color)]">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                </div>
+            </div>
+            <div class="bg-[var(--card-bg-color)] rounded-xl p-4 shadow-sm border border-[var(--border-color)] swipe-container">
+                <div class="flex items-center swipe-item" data-id="1">
+                    <img src="https://placehold.co/48x48/60a5fa/FFFFFF?text=G" class="rounded-lg w-12 h-12" alt="Google Favicon">
+                    <div class="ml-4 overflow-hidden">
+                        <p class="font-medium truncate">Responsive Web Design</p>
+                        <p class="text-sm text-[var(--text-secondary-color)] truncate">google.com</p>
+                    </div>
+                    <button class="ml-auto text-[var(--text-secondary-color)] dismiss-btn p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Discover -->
+        <section id="discover" class="draggable-section" draggable="true">
+             <div class="flex justify-between items-center mb-2">
+                <h2 class="font-semibold text-[var(--text-color)]">Discover</h2>
+                <div class="handle hidden cursor-move text-[var(--text-secondary-color)]">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                </div>
+            </div>
+            <div class="flex space-x-4 overflow-x-auto pb-3 no-scrollbar">
+                <div class="min-w-[250px] w-[250px] bg-[var(--card-bg-color)] rounded-xl overflow-hidden shadow-sm border border-[var(--border-color)]">
+                    <img src="https://placehold.co/250x140/34d399/FFFFFF?text=Tech" class="w-full h-32 object-cover" alt="Tech News">
+                    <div class="p-3">
+                        <p class="font-semibold leading-tight">The Future of AI in Mobile Development</p>
+                        <p class="text-xs text-[var(--text-secondary-color)] mt-1">Tech Today</p>
+                    </div>
+                </div>
+                <div class="min-w-[250px] w-[250px] bg-[var(--card-bg-color)] rounded-xl overflow-hidden shadow-sm border border-[var(--border-color)]">
+                    <img src="https://placehold.co/250x140/fbbf24/FFFFFF?text=Travel" class="w-full h-32 object-cover" alt="Travel News">
+                    <div class="p-3">
+                        <p class="font-semibold leading-tight">Top 10 Hidden Gems to Visit in 2025</p>
+                        <p class="text-xs text-[var(--text-secondary-color)] mt-1">Wanderlust Weekly</p>
+                    </div>
+                </div>
+                <div class="min-w-[250px] w-[250px] bg-[var(--card-bg-color)] rounded-xl overflow-hidden shadow-sm border border-[var(--border-color)]">
+                    <img src="https://placehold.co/250x140/f87171/FFFFFF?text=Food" class="w-full h-32 object-cover" alt="Food News">
+                    <div class="p-3">
+                        <p class="font-semibold leading-tight">A Guide to Perfect Sourdough Bread</p>
+                        <p class="text-xs text-[var(--text-secondary-color)] mt-1">Culinary Corner</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Collections -->
+        <section id="collections" class="draggable-section" draggable="true">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="font-semibold text-[var(--text-color)]">Collections</h2>
+                <div class="handle hidden cursor-move text-[var(--text-secondary-color)]">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                 <div class="bg-[var(--card-bg-color)] rounded-xl p-4 shadow-sm border border-[var(--border-color)]">
+                    <p class="font-medium">🌍 Trip Planning</p>
+                    <p class="text-sm text-[var(--text-secondary-color)] mt-1">12 items</p>
+                </div>
+                <div class="bg-[var(--card-bg-color)] rounded-xl p-4 shadow-sm border border-[var(--border-color)]">
+                    <p class="font-medium">💡 Project Ideas</p>
+                    <p class="text-sm text-[var(--text-secondary-color)] mt-1">8 items</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation has been removed -->
+
+    <!-- More Options Menu has been removed -->
+    
+    <!-- Custom Context Menu for Long Press (Hidden) -->
+    <div id="contextMenu" class="fixed bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl shadow-lg p-2 text-sm z-50 hidden">
+        <a href="#" class="block px-4 py-2 hover:bg-[var(--bg-color)] rounded-md">Open in new tab</a>
+        <a href="#" class="block px-4 py-2 hover:bg-[var(--bg-color)] rounded-md">Edit link</a>
+        <a href="#" class="block px-4 py-2 text-red-500 hover:bg-[var(--bg-color)] rounded-md">Remove</a>
     </div>
 
-    <!-- Quick Links -->
-    <div class="grid grid-cols-4 gap-6 mt-8">
-      <a href="https://youtube.com" class="flex flex-col items-center">
-        <div class="w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-md">
-          <img src="https://www.svgrepo.com/show/13671/youtube.svg" class="w-7 h-7">
-        </div>
-        <span class="text-xs mt-2">YouTube</span>
-      </a>
-      <a href="https://chat.openai.com" class="flex flex-col items-center">
-        <div class="w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-md">
-          <img src="https://www.svgrepo.com/show/331370/openai.svg" class="w-7 h-7">
-        </div>
-        <span class="text-xs mt-2">ChatGPT</span>
-      </a>
-      <a href="https://facebook.com" class="flex flex-col items-center">
-        <div class="w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-md">
-          <img src="https://www.svgrepo.com/show/157806/facebook.svg" class="w-7 h-7">
-        </div>
-        <span class="text-xs mt-2">Facebook</span>
-      </a>
-      <a href="https://twitter.com" class="flex flex-col items-center">
-        <div class="w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-md">
-          <img src="https://www.svgrepo.com/show/183608/twitter.svg" class="w-7 h-7">
-        </div>
-        <span class="text-xs mt-2">Twitter</span>
-      </a>
-    </div>
 
-    <!-- Weather Widget -->
-    <div class="mt-10 w-full max-w-md glass rounded-2xl shadow-md p-4 flex items-center justify-between">
-      <div>
-        <p class="text-xs text-gray-500">Your Location</p>
-        <p id="temp" class="text-2xl font-bold">--°C</p>
-      </div>
-      <p id="condition" class="text-sm text-gray-600">Loading...</p>
-    </div>
-  </div>
+    <script>
+        // --- THEME MANAGEMENT ---
+        const themeManager = {
+            init() {
+                // 1. Check for a saved theme in localStorage
+                const savedTheme = localStorage.getItem('theme');
+                // 2. Check for the OS-level preference for dark mode
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  <script>
-    let useBingBg = true;
-    let bingUrl = "";
+                // Use the saved theme if it exists, otherwise fall back to the system preference
+                if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            },
+            toggle() {
+                // Toggle the .dark class on the <html> element
+                const isDark = document.documentElement.classList.toggle('dark');
+                // Save the user's choice to localStorage so it persists across sessions
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            }
+        };
+        // Set the theme as soon as the script loads to prevent a flash of incorrect colors
+        themeManager.init();
 
-    // ===== Fetch Bing Daily Wallpaper =====
-    async function getBingWallpaper() {
-      try {
-        const res = await fetch("https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US");
-        const data = await res.json();
-        bingUrl = "https://www.bing.com" + data.images[0].url;
-        document.body.style.backgroundImage = `url(${bingUrl})`;
-      } catch {
-        bingUrl = "";
-        document.body.style.background = "#f3f4f6";
-      }
-    }
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DATA ---
+            const quickLinksData = [
+                { name: 'Google', icon: 'G', color: 'bg-blue-500' },
+                { name: 'YouTube', icon: 'YT', color: 'bg-red-500' },
+                { name: 'Email', icon: 'M', color: 'bg-green-500' },
+                { name: 'GitHub', icon: 'GH', color: 'bg-gray-700' },
+                { name: 'Twitter', icon: 'X', color: 'bg-black' },
+                { name: 'Maps', icon: 'M', color: 'bg-orange-500' },
+                { name: 'Photos', icon: 'P', color: 'bg-yellow-500' },
+                { name: 'Drive', icon: 'D', color: 'bg-indigo-500' },
+            ];
 
-    // ===== Background Toggle =====
-    document.getElementById("toggleBg").addEventListener("click", () => {
-      useBingBg = !useBingBg;
-      if (useBingBg && bingUrl) {
-        document.body.style.backgroundImage = `url(${bingUrl})`;
-      } else {
-        document.body.style.backgroundImage = "none";
-        document.body.style.background = "#f3f4f6"; // plain mode
-      }
-    });
+            // Removed moreMenuItems data array
+            
+            // --- ELEMENTS ---
+            const quickLinksContainer = document.querySelector('#quick-links .grid');
+            // Removed moreMenu related elements
+            const editGridBtn = document.getElementById('editGridBtn');
+            const smartGrid = document.getElementById('smartGrid');
+            const contextMenu = document.getElementById('contextMenu');
 
-    // ===== WEATHER (OpenWeather API) =====
-    async function loadWeather() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async pos => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const apiKey = "YOUR_OPENWEATHER_API_KEY"; // replace with your API key
-          const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
-          const res = await fetch(url);
-          const data = await res.json();
-          document.getElementById("temp").innerText = Math.round(data.main.temp) + "°C";
-          document.getElementById("condition").innerText = data.weather[0].main + " ⛅";
+            // --- RENDER FUNCTIONS ---
+            function renderQuickLinks() {
+                quickLinksContainer.innerHTML = quickLinksData.map(link => `
+                    <div class="flex flex-col items-center space-y-2 quick-link-item">
+                        <div class="w-14 h-14 ${link.color} rounded-2xl flex items-center justify-center text-white font-bold text-lg">
+                            ${link.icon}
+                        </div>
+                        <span class="text-xs text-[var(--text-secondary-color)] truncate">${link.name}</span>
+                    </div>
+                `).join('');
+                addQuickLinkListeners();
+            }
+
+            // Removed renderMoreMenu function
+
+            // Removed MORE MENU logic
+
+            // --- GRID EDITING & DRAG-DROP ---
+            let isEditing = false;
+            let draggedItem = null;
+
+            editGridBtn.addEventListener('click', () => {
+                isEditing = !isEditing;
+                smartGrid.classList.toggle('editing');
+                editGridBtn.textContent = isEditing ? 'Done' : 'Edit';
+                document.querySelectorAll('.handle').forEach(h => h.classList.toggle('hidden', !isEditing));
+            });
+
+            smartGrid.addEventListener('dragstart', (e) => {
+                if (!isEditing || !e.target.classList.contains('draggable-section')) return;
+                draggedItem = e.target;
+                setTimeout(() => e.target.classList.add('dragging'), 0);
+            });
+
+            smartGrid.addEventListener('dragend', () => {
+                if (!draggedItem) return;
+                setTimeout(() => draggedItem.classList.remove('dragging'), 0);
+                draggedItem = null;
+            });
+
+            smartGrid.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!isEditing || !draggedItem) return;
+                const afterElement = getDragAfterElement(smartGrid, e.clientY);
+                if (afterElement == null) {
+                    smartGrid.appendChild(draggedItem);
+                } else {
+                    smartGrid.insertBefore(draggedItem, afterElement);
+                }
+            });
+            
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.draggable-section:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+            
+            // --- CONTEXT MENU (LONG PRESS) ---
+            let longPressTimer;
+            function addQuickLinkListeners() {
+                document.querySelectorAll('.quick-link-item').forEach(item => {
+                    item.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        longPressTimer = setTimeout(() => {
+                            showContextMenu(e.touches[0].clientX, e.touches[0].clientY);
+                        }, 500);
+                    });
+                    item.addEventListener('touchend', () => clearTimeout(longPressTimer));
+                    item.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+                    item.oncontextmenu = (e) => { // for desktop testing
+                        e.preventDefault();
+                        showContextMenu(e.clientX, e.clientY);
+                    };
+                });
+            }
+            
+            function showContextMenu(x, y) {
+                contextMenu.style.left = `${x}px`;
+                contextMenu.style.top = `${y}px`;
+                contextMenu.classList.remove('hidden');
+                
+                // Position adjustment if menu goes off-screen
+                const menuRect = contextMenu.getBoundingClientRect();
+                if (menuRect.right > window.innerWidth) {
+                    contextMenu.style.left = `${window.innerWidth - menuRect.width - 10}px`;
+                }
+                if (menuRect.bottom > window.innerHeight) {
+                    contextMenu.style.top = `${window.innerHeight - menuRect.height - 10}px`;
+                }
+            }
+            
+            window.addEventListener('click', () => contextMenu.classList.add('hidden'));
+
+            // --- SWIPE TO DISMISS ---
+            document.querySelectorAll('.swipe-container').forEach(container => {
+                let startX;
+                let isSwiping = false;
+                const swipeItem = container.querySelector('.swipe-item');
+
+                container.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    isSwiping = true;
+                });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (!isSwiping) return;
+                    const currentX = e.touches[0].clientX;
+                    const diffX = currentX - startX;
+                    if (diffX > 0) { // only swipe right
+                        swipeItem.style.transform = `translateX(${diffX}px)`;
+                    }
+                });
+
+                container.addEventListener('touchend', (e) => {
+                    if (!isSwiping) return;
+                    isSwiping = false;
+                    const currentX = e.changedTouches[0].clientX;
+                    const diffX = currentX - startX;
+
+                    if (diffX > swipeItem.offsetWidth / 3) {
+                       dismissItem(swipeItem);
+                    } else {
+                        swipeItem.style.transform = 'translateX(0)';
+                    }
+                });
+                
+                // Also handle button click dismiss
+                const dismissBtn = container.querySelector('.dismiss-btn');
+                if (dismissBtn) {
+                    dismissBtn.addEventListener('click', () => dismissItem(swipeItem));
+                }
+            });
+
+            function dismissItem(item) {
+                item.classList.add('swipe-out');
+                item.addEventListener('transitionend', () => {
+                   const parentSection = item.closest('section');
+                   if (parentSection) {
+                       parentSection.style.transition = 'opacity 0.3s, transform 0.3s';
+                       parentSection.style.opacity = '0';
+                       parentSection.style.transform = 'scale(0.95)';
+                       setTimeout(() => parentSection.remove(), 300);
+                   } else {
+                       item.remove();
+                   }
+                });
+            }
+
+            // --- INITIALIZATION ---
+            renderQuickLinks();
+            // Removed renderMoreMenu call
         });
-      }
-    }
-
-    // Init
-    getBingWallpaper();
-    loadWeather();
-  </script>
+    </script>
 </body>
 </html>
+
