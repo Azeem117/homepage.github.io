@@ -77,7 +77,7 @@
 
         <!-- Add New Site Button -->
         <div class="fixed bottom-8 right-8">
-            <button id="addSiteBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
+            <button id="addSiteBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -154,6 +154,7 @@
                         userId = user.uid;
                         sitesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/sites`);
                         listenToSites();
+                        addSiteBtn.disabled = false; // Enable the button once auth is ready
                     } else {
                         // If no user, sign in.
                         if (initialAuthToken) {
