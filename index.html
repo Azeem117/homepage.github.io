@@ -1,351 +1,367 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyBrowser Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f3f4f6; /* gray-100 */
-            --card-bg-color: #ffffff; /* white */
-            --text-color: #111827; /* gray-900 */
-            --text-secondary-color: #6b7280; /* gray-500 */
-            --accent-color: #3b82f6; /* blue-500 */
-            --border-color: #e5e7eb; /* gray-200 */
-        }
-
-        html.dark {
-            --bg-color: #111827; /* gray-900 */
-            --card-bg-color: #1f2937; /* gray-800 */
-            --text-color: #f9fafb; /* gray-50 */
-            --text-secondary-color: #9ca3af; /* gray-400 */
-            --accent-color: #60a5fa; /* blue-400 */
-            --border-color: #374151; /* gray-700 */
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            overscroll-behavior-y: contain;
         }
-        
-        .bottom-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            min-height: 100vh;
-            padding-bottom: 8vh;
-        }
-
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        /* Settings Panel Transition */
-        #settingsModal {
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
             transition: opacity 0.3s ease-in-out;
         }
-        #settingsPanel {
-            transition: transform 0.3s ease-in-out;
+        .modal-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
-        #settingsModal.hidden #settingsPanel {
-            transform: translateY(100%);
+        .modal-hidden {
+            opacity: 0;
+            pointer-events: none;
         }
-
+        .modal-hidden .modal-content {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        .icon-item {
+            aspect-ratio: 1 / 1;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .icon-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        .edit-button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: white;
+            color: #1f2937;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            transform: scale(0.8);
+        }
+        .icon-container:hover .edit-button {
+            opacity: 1;
+            transform: scale(1);
+        }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="bg-gray-900 text-white antialiased">
 
-    <div class="bottom-container">
-        <!-- Search Bar -->
-        <header class="p-4 w-full max-w-md">
-             <form id="search-form" class="flex items-center w-full bg-[var(--card-bg-color)] rounded-full shadow-sm border border-[var(--border-color)] px-4 py-2.5">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--text-secondary-color)]"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input id="search-input" type="text" placeholder="Search Google or type URL" class="w-full bg-transparent text-[var(--text-color)] placeholder-[var(--text-secondary-color)] focus:outline-none ml-3 mr-2">
-                <button type="button" id="settings-btn" class="p-1 text-[var(--text-secondary-color)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </button>
-                <button type="submit" class="hidden"></button>
-            </form>
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8 md:py-16">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white">Your Quick Links</h1>
+            <p class="text-lg text-gray-400 mt-2">A personal dashboard for your favorite sites.</p>
         </header>
-    
-        <!-- Quick Links -->
-        <main class="px-4 mt-6 w-full max-w-md">
-            <section id="quick-links">
-                <div id="quick-links-grid" class="grid grid-cols-4 gap-4 text-center">
-                    <!-- Links will be dynamically inserted here -->
-                </div>
-            </section>
-        </main>
-    </div>
-    
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 z-40 hidden">
-        <div id="settingsPanel" class="absolute bottom-0 left-0 right-0 bg-[var(--card-bg-color)] rounded-t-2xl p-4 transform translate-y-full">
-            <div class="flex justify-between items-center mb-4 pb-2 border-b border-[var(--border-color)]">
-                <h2 class="text-lg font-bold">Settings</h2>
-                <button id="close-settings-btn" class="p-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <h3 class="font-semibold text-[var(--text-secondary-color)] text-sm px-2">Manage Quick Links</h3>
-                <div id="settings-links-list" class="space-y-2">
-                    <!-- Settings links list will be rendered here -->
-                </div>
-                <button id="add-new-link-btn" class="w-full text-center py-3 bg-[var(--bg-color)] rounded-lg font-semibold text-[var(--accent-color)]">Add New Link</button>
-            </div>
+
+        <!-- Loading Indicator -->
+        <div id="loader" class="text-center">
+            <p class="text-gray-400">Loading your links...</p>
+        </div>
+
+        <!-- Icons Grid -->
+        <div id="sitesGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-6 md:gap-8">
+            <!-- Site icons will be injected here by JavaScript -->
+        </div>
+
+        <!-- Add New Site Button -->
+        <div class="fixed bottom-8 right-8">
+            <button id="addSiteBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
         </div>
     </div>
 
-    <!-- Edit/Add Link Modal -->
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-[var(--card-bg-color)] rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 id="modal-title" class="text-lg font-bold mb-4">Edit Link</h2>
-            <form id="edit-form">
-                <input type="hidden" id="edit-index">
-                <div class="space-y-4">
-                    <div>
-                        <label for="edit-name" class="text-sm font-medium text-[var(--text-secondary-color)]">Name</label>
-                        <input type="text" id="edit-name" required class="mt-1 w-full bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]">
-                    </div>
-                    <div>
-                        <label for="edit-url" class="text-sm font-medium text-[var(--text-secondary-color)]">URL</label>
-                        <input type="url" id="edit-url" required placeholder="https://example.com" class="mt-1 w-full bg-[var(--bg-color)] border border-[var(--border-color)] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]">
-                    </div>
+    <!-- Add/Edit Modal -->
+    <div id="editModal" class="modal-backdrop fixed inset-0 flex items-center justify-center p-4 modal-hidden">
+        <div class="modal-content bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 border border-gray-700">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-white">Add New Site</h2>
+            <form id="siteForm">
+                <input type="hidden" id="siteId">
+                <div class="mb-4">
+                    <label for="siteName" class="block text-sm font-medium text-gray-300 mb-1">Site Name</label>
+                    <input type="text" id="siteName" name="siteName" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Google" required>
                 </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" id="cancel-edit" class="px-4 py-2 rounded-lg text-sm font-semibold bg-[var(--bg-color)] hover:opacity-80">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold bg-[var(--accent-color)] text-white hover:opacity-80">Save</button>
+                <div>
+                    <label for="siteUrl" class="block text-sm font-medium text-gray-300 mb-1">Site URL</label>
+                    <input type="url" id="siteUrl" name="siteUrl" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://google.com" required>
+                </div>
+                <div class="flex justify-end items-center gap-4 mt-8">
+                    <button id="deleteSiteBtn" type="button" class="text-red-500 hover:text-red-400 font-medium transition-colors">Delete</button>
+                    <button id="cancelBtn" type="button" class="text-gray-400 hover:text-white transition-colors">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // --- THEME MANAGEMENT ---
-            const themeManager = {
-                init() {
-                    const savedTheme = localStorage.getItem('theme');
-                    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-                        document.documentElement.classList.add('dark');
+        // --- Configuration ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "DEMO", authDomain: "DEMO", projectId: "DEMO" };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+
+        // --- DOM Elements ---
+        const sitesGrid = document.getElementById('sitesGrid');
+        const addSiteBtn = document.getElementById('addSiteBtn');
+        const editModal = document.getElementById('editModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const siteForm = document.getElementById('siteForm');
+        const siteIdInput = document.getElementById('siteId');
+        const siteNameInput = document.getElementById('siteName');
+        const siteUrlInput = document.getElementById('siteUrl');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const deleteSiteBtn = document.getElementById('deleteSiteBtn');
+        const loader = document.getElementById('loader');
+
+        // --- Firebase Initialization ---
+        let db, auth, userId, sitesCollectionRef;
+        let unsubscribe = null; // To store the onSnapshot listener
+
+        async function initializeFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('debug');
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        sitesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/sites`);
+                        listenToSites();
                     } else {
-                        document.documentElement.classList.remove('dark');
+                        // If no user, sign in.
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
                     }
-                },
-                toggle() {
-                    const isDark = document.documentElement.classList.toggle('dark');
-                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                }
-            };
-            themeManager.init();
+                });
 
-            // --- DATA MANAGEMENT ---
-            let quickLinksData = [];
-            const defaultLinks = [
-                { name: 'Google', url: 'https://google.com', icon: 'G', color: 'bg-blue-500' },
-                { name: 'YouTube', url: 'https://youtube.com', icon: 'YT', color: 'bg-red-500' },
-                { name: 'Email', url: 'https://mail.google.com', icon: 'M', color: 'bg-green-500' },
-                { name: 'GitHub', url: 'https://github.com', icon: 'GH', color: 'bg-gray-700' },
-                { name: 'Twitter', url: 'https://twitter.com', icon: 'X', color: 'bg-black' },
-                { name: 'Maps', url: 'https://maps.google.com', icon: 'M', color: 'bg-orange-500' },
-                { name: 'Photos', url: 'https://photos.google.com', icon: 'P', color: 'bg-yellow-500' },
-                { name: 'Add', url: '#', icon: '+', color: 'bg-gray-200 dark:bg-gray-700' }
-            ];
-
-            function loadQuickLinks() {
-                const storedLinks = localStorage.getItem('quickLinks');
-                quickLinksData = storedLinks ? JSON.parse(storedLinks) : defaultLinks.slice(0, -1); // Don't store the add button
-                renderQuickLinks();
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                sitesGrid.innerHTML = `<p class="text-red-400 col-span-full text-center">Could not connect to the database. Please check your configuration.</p>`;
+                loader.style.display = 'none';
             }
+        }
+        
+        // --- State ---
+        let currentEditingId = null;
+        const colors = [
+            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
+            'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
+            'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500',
+            'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500',
+            'bg-rose-500'
+        ];
 
-            function saveQuickLinks() {
-                localStorage.setItem('quickLinks', JSON.stringify(quickLinksData));
-            }
+        // --- UI Rendering ---
+        function renderSites(sites) {
+            sitesGrid.innerHTML = ''; // Clear previous icons
+            if (sites.length === 0) {
+                 sitesGrid.innerHTML = `<p class="text-gray-400 col-span-full text-center">No links added yet. Click the '+' button to start!</p>`;
+            } else {
+                sites.forEach((site, index) => {
+                    const colorClass = colors[index % colors.length];
+                    const initial = site.name ? site.name[0].toUpperCase() : '?';
 
-            // --- ELEMENTS ---
-            const quickLinksGrid = document.getElementById('quick-links-grid');
-            const editModal = document.getElementById('editModal');
-            const editForm = document.getElementById('edit-form');
-            const searchForm = document.getElementById('search-form');
-            const searchInput = document.getElementById('search-input');
-            const settingsBtn = document.getElementById('settings-btn');
-            const settingsModal = document.getElementById('settingsModal');
-            const closeSettingsBtn = document.getElementById('close-settings-btn');
-            const settingsLinksList = document.getElementById('settings-links-list');
-            const addNewLinkBtn = document.getElementById('add-new-link-btn');
-            
-            // --- RENDER FUNCTIONS ---
-            function renderQuickLinks() {
-                quickLinksGrid.innerHTML = '';
-                const linksToRender = [...quickLinksData];
-                // Cap at 7 links and then show an add button
-                if (linksToRender.length < 8) {
-                     linksToRender.push({ isAddButton: true });
-                }
-                
-                linksToRender.slice(0, 8).forEach((link, index) => {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'flex flex-col items-center space-y-2';
+                    const siteElement = document.createElement('div');
+                    siteElement.className = 'flex flex-col items-center gap-2 group';
 
-                    if (link.isAddButton) {
-                        itemEl.innerHTML = `
-                            <button class="w-14 h-14 bg-[var(--bg-color)] border-2 border-dashed border-[var(--border-color)] rounded-2xl flex items-center justify-center text-[var(--text-secondary-color)]" aria-label="Add new link">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                            <span class="text-xs text-[var(--text-secondary-color)]">Add</span>
-                        `;
-                        itemEl.querySelector('button').addEventListener('click', () => {
-                             openSettings();
-                             handleAddLink();
-                        });
-                    } else {
-                        itemEl.innerHTML = `
-                            <a href="${link.url}" class="flex flex-col items-center space-y-2">
-                                <div class="w-14 h-14 ${link.color} rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-                                    ${link.icon}
-                                </div>
-                                <span class="text-xs text-[var(--text-secondary-color)] truncate w-14">${link.name}</span>
+                    siteElement.innerHTML = `
+                        <div class="relative icon-container">
+                            <a href="${site.url}" target="_blank" rel="noopener noreferrer" class="icon-item w-16 h-16 sm:w-20 sm:h-20 ${colorClass} rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md">
+                                ${initial}
                             </a>
-                        `;
-                    }
-                    quickLinksGrid.appendChild(itemEl);
-                });
-            }
-
-            function renderSettingsLinksList() {
-                settingsLinksList.innerHTML = '';
-                if(quickLinksData.length === 0) {
-                     settingsLinksList.innerHTML = `<p class="text-center text-sm text-[var(--text-secondary-color)] py-4">No links yet. Add one!</p>`;
-                }
-                quickLinksData.forEach((link, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'flex items-center bg-[var(--bg-color)] p-2 rounded-lg';
-                    item.innerHTML = `
-                        <div class="w-10 h-10 ${link.color} rounded-lg flex items-center justify-center text-white font-bold text-sm">${link.icon}</div>
-                        <div class="ml-3 flex-1 overflow-hidden">
-                            <p class="font-medium truncate">${link.name}</p>
-                            <p class="text-xs text-[var(--text-secondary-color)] truncate">${link.url}</p>
+                            <button data-id="${site.id}" class="edit-btn edit-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
+                            </button>
                         </div>
-                        <button class="edit-link-btn p-2 text-[var(--text-secondary-color)]" data-index="${index}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                        <button class="remove-link-btn p-2 text-red-500" data-index="${index}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
+                        <span class="text-sm text-gray-300 text-center truncate w-24">${site.name}</span>
                     `;
-                    settingsLinksList.appendChild(item);
+                    sitesGrid.appendChild(siteElement);
                 });
+            }
+             loader.style.display = 'none';
+        }
 
-                // Add event listeners for the new buttons
-                document.querySelectorAll('.edit-link-btn').forEach(btn => btn.addEventListener('click', (e) => handleEditLink(e.currentTarget.dataset.index)));
-                document.querySelectorAll('.remove-link-btn').forEach(btn => btn.addEventListener('click', (e) => handleRemoveLink(e.currentTarget.dataset.index)));
+        // --- Firestore ---
+        function listenToSites() {
+            if (unsubscribe) unsubscribe(); // Detach old listener if exists
+            
+            if (!sitesCollectionRef) return;
+            
+            unsubscribe = onSnapshot(sitesCollectionRef, (snapshot) => {
+                const sites = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderSites(sites);
+            }, (error) => {
+                console.error("Error listening to sites collection:", error);
+                sitesGrid.innerHTML = `<p class="text-red-400 col-span-full text-center">Error fetching your links.</p>`;
+                loader.style.display = 'none';
+            });
+        }
+        
+        // --- Modal ---
+        function openModal(site = null) {
+            siteForm.reset();
+            if (site) {
+                modalTitle.textContent = 'Edit Site';
+                siteIdInput.value = site.id;
+                siteNameInput.value = site.name;
+                siteUrlInput.value = site.url;
+                deleteSiteBtn.style.display = 'block';
+                currentEditingId = site.id;
+            } else {
+                modalTitle.textContent = 'Add New Site';
+                deleteSiteBtn.style.display = 'none';
+                currentEditingId = null;
+            }
+            editModal.classList.remove('modal-hidden');
+        }
+
+        function closeModal() {
+            editModal.classList.add('modal-hidden');
+        }
+
+        // --- Event Handlers ---
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const name = siteNameInput.value.trim();
+            let url = siteUrlInput.value.trim();
+
+            if (!name || !url) {
+                alert("Please fill in both fields.");
+                return;
             }
             
-            // --- SEARCH FUNCTIONALITY ---
-            searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const query = searchInput.value.trim();
-                if (!query) return;
-                try {
-                    new URL(query);
-                    window.location.href = query.startsWith('http') ? query : `https://${query}`;
-                } catch (_) {
-                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-                }
-            });
-
-            // --- SETTINGS MODAL ---
-            function openSettings() {
-                renderSettingsLinksList();
-                settingsModal.classList.remove('hidden');
-            }
-            function closeSettings() {
-                settingsModal.classList.add('hidden');
-            }
-            settingsBtn.addEventListener('click', openSettings);
-            closeSettingsBtn.addEventListener('click', closeSettings);
-            settingsModal.addEventListener('click', (e) => {
-                if (e.target === settingsModal) closeSettings();
-            });
-
-            // --- EDIT/ADD/REMOVE LOGIC ---
-            addNewLinkBtn.addEventListener('click', () => handleAddLink());
-            
-            function handleAddLink() {
-                document.getElementById('modal-title').innerText = 'Add Link';
-                editForm.reset();
-                document.getElementById('edit-index').value = '';
-                editModal.classList.remove('hidden');
+            // Prepend https:// if no protocol is present
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = `https://${url}`;
             }
 
-            function handleEditLink(index) {
-                const linkData = quickLinksData[index];
-                document.getElementById('modal-title').innerText = 'Edit Link';
-                document.getElementById('edit-index').value = index;
-                document.getElementById('edit-name').value = linkData.name;
-                document.getElementById('edit-url').value = linkData.url;
-                editModal.classList.remove('hidden');
-            }
+            const siteData = { name, url };
 
-            function handleRemoveLink(index) {
-                quickLinksData.splice(index, 1);
-                saveAndRerender();
-            }
-
-            document.getElementById('cancel-edit').addEventListener('click', () => {
-                editModal.classList.add('hidden');
-            });
-
-            editForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const index = document.getElementById('edit-index').value;
-                const name = document.getElementById('edit-name').value;
-                const url = document.getElementById('edit-url').value;
-                const icon = name.substring(0, 2).toUpperCase();
-
-                // Simple color hashing for variety
-                const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500', 'bg-indigo-500', 'bg-purple-500', 'bg-pink-500'];
-                const color = colors[Math.abs(name.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)) % colors.length];
-
-                const newLinkData = { name, url, icon, color };
-
-                if (index) {
-                    quickLinksData[index] = newLinkData;
+            try {
+                if (currentEditingId) {
+                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/sites`, currentEditingId);
+                    await updateDoc(docRef, siteData);
                 } else {
-                    if (quickLinksData.length < 8) {
-                        quickLinksData.push(newLinkData);
-                    } else {
-                        // Optional: Show an error/alert that the max number of links is reached
-                        console.log("Maximum number of links reached.");
-                    }
+                    await addDoc(sitesCollectionRef, siteData);
                 }
-                
-                saveAndRerender();
-                editModal.classList.add('hidden');
-            });
-            
-            function saveAndRerender() {
-                saveQuickLinks();
-                renderQuickLinks();
-                renderSettingsLinksList();
+                closeModal();
+            } catch (error) {
+                console.error("Error saving site:", error);
+                alert("Could not save the site. Please try again.");
             }
+        }
 
-            // --- INITIALIZATION ---
-            loadQuickLinks();
+        async function handleDelete() {
+            if (!currentEditingId) return;
+
+            // Using a custom confirm because window.confirm is blocked in this environment
+            const confirmed = await customConfirm("Are you sure you want to delete this link?");
+            if (confirmed) {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/sites`, currentEditingId));
+                    closeModal();
+                } catch (error) {
+                    console.error("Error deleting site:", error);
+                    alert("Could not delete the site. Please try again.");
+                }
+            }
+        }
+
+        // A simple promise-based confirm dialog replacement
+        function customConfirm(message) {
+            return new Promise((resolve) => {
+                const confirmWrapper = document.createElement('div');
+                confirmWrapper.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:999;';
+                
+                const confirmBox = document.createElement('div');
+                confirmBox.style.cssText = 'background: #2d3748; padding: 24px; border-radius: 8px; text-align: center; color: white;';
+                confirmBox.innerHTML = `<p style="margin-bottom: 16px;">${message}</p>`;
+
+                const yesButton = document.createElement('button');
+                yesButton.textContent = 'Yes';
+                yesButton.style.cssText = 'background: #dc2626; color: white; padding: 8px 16px; border-radius: 6px; margin-right: 8px; border: none; cursor: pointer;';
+
+                const noButton = document.createElement('button');
+                noButton.textContent = 'No';
+                noButton.style.cssText = 'background: #4a5568; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;';
+
+                yesButton.onclick = () => {
+                    document.body.removeChild(confirmWrapper);
+                    resolve(true);
+                };
+                noButton.onclick = () => {
+                    document.body.removeChild(confirmWrapper);
+                    resolve(false);
+                };
+
+                confirmBox.appendChild(yesButton);
+                confirmBox.appendChild(noButton);
+                confirmWrapper.appendChild(confirmBox);
+                document.body.appendChild(confirmWrapper);
+            });
+        }
+
+
+        // --- Attach Event Listeners ---
+        addSiteBtn.addEventListener('click', () => openModal());
+        cancelBtn.addEventListener('click', closeModal);
+        deleteSiteBtn.addEventListener('click', handleDelete);
+        siteForm.addEventListener('submit', handleFormSubmit);
+
+        // Event delegation for edit buttons
+        sitesGrid.addEventListener('click', async (e) => {
+            const editButton = e.target.closest('.edit-btn');
+            if (editButton) {
+                const id = editButton.dataset.id;
+                // Since we already have the data in memory from onSnapshot, we can find it.
+                // However, reading it again ensures consistency, though it's a bit slower.
+                // For simplicity here, let's find it from the rendered data.
+                // This is a bit of a shortcut. A more robust app might use a local cache/state manager.
+                 const docRef = doc(db, `artifacts/${appId}/users/${userId}/sites`, id);
+                 // In a real app with a proper state manager you wouldn't re-fetch.
+                 // This is just to keep the example simple without a local state array.
+                 onSnapshot(docRef, (doc) => {
+                     if (doc.exists()) {
+                         openModal({ id: doc.id, ...doc.data() });
+                     }
+                 });
+            }
         });
+
+        // Close modal on backdrop click
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                closeModal();
+            }
+        });
+
+        // Initialize App
+        initializeFirebase();
+
     </script>
 </body>
 </html>
-
-
