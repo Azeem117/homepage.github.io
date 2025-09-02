@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
+    <title>Personal Link Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -93,7 +93,12 @@
                 <input type="hidden" id="siteId">
                 <div class="mb-4">
                     <label for="siteName" class="block text-sm font-medium text-gray-300 mb-1">Site Name</label>
-                    <input type="text" id="siteName" name="siteName" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Google" required>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="siteName" name="siteName" class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Google" required>
+                        <button type="button" id="suggestNameBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-3 rounded-md text-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-wait">
+                           Suggest ✨
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label for="siteUrl" class="block text-sm font-medium text-gray-300 mb-1">Site URL</label>
@@ -130,6 +135,7 @@
         const siteUrlInput = document.getElementById('siteUrl');
         const cancelBtn = document.getElementById('cancelBtn');
         const deleteSiteBtn = document.getElementById('deleteSiteBtn');
+        const suggestNameBtn = document.getElementById('suggestNameBtn');
         const loader = document.getElementById('loader');
 
         // --- Firebase Initialization ---
@@ -250,7 +256,7 @@
             let url = siteUrlInput.value.trim();
 
             if (!name || !url) {
-                alert("Please fill in both fields.");
+                await customAlert("Please fill in both fields.");
                 return;
             }
             
@@ -271,14 +277,13 @@
                 closeModal();
             } catch (error) {
                 console.error("Error saving site:", error);
-                alert("Could not save the site. Please try again.");
+                await customAlert("Could not save the site. Please try again.");
             }
         }
 
         async function handleDelete() {
             if (!currentEditingId) return;
 
-            // Using a custom confirm because window.confirm is blocked in this environment
             const confirmed = await customConfirm("Are you sure you want to delete this link?");
             if (confirmed) {
                 try {
@@ -286,19 +291,98 @@
                     closeModal();
                 } catch (error) {
                     console.error("Error deleting site:", error);
-                    alert("Could not delete the site. Please try again.");
+                    await customAlert("Could not delete the site. Please try again.");
                 }
             }
         }
 
-        // A simple promise-based confirm dialog replacement
+        // --- Gemini API ---
+        async function getSuggestedName(url) {
+            suggestNameBtn.disabled = true;
+            suggestNameBtn.innerHTML = `
+                <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            `;
+
+            try {
+                const apiKey = ""; // API key is handled by the environment
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                if (!url || !url.startsWith('http')) {
+                    await customAlert('Please enter a valid URL (starting with http:// or https://) to get a suggestion.');
+                    return;
+                }
+
+                const systemPrompt = "You are an expert at summarizing websites. Your task is to provide a very short, concise name (one to three words) for a given website URL. Only return the suggested name and nothing else.";
+                const userQuery = `Suggest a name for the website at this URL: ${url}`;
+                
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) { throw new Error(`API call failed: ${response.status}`); }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    siteNameInput.value = candidate.content.parts[0].text.trim().replace(/^"|"$/g, ''); // Clean quotes
+                } else {
+                    throw new Error('Could not extract a suggestion from the API response.');
+                }
+
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                await customAlert("Sorry, I couldn't come up with a suggestion. Please try again or enter a name manually.");
+            } finally {
+                suggestNameBtn.disabled = false;
+                suggestNameBtn.innerHTML = 'Suggest ✨';
+            }
+        }
+
+        // --- Custom Dialogs ---
+        function customAlert(message) {
+            return new Promise((resolve) => {
+                const alertWrapper = document.createElement('div');
+                alertWrapper.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000;';
+                
+                const alertBox = document.createElement('div');
+                alertBox.style.cssText = 'background: #2d3748; padding: 24px; border-radius: 8px; text-align: center; color: white; max-width: 90%; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
+                alertBox.innerHTML = `<p style="margin-bottom: 16px;">${message}</p>`;
+
+                const okButton = document.createElement('button');
+                okButton.textContent = 'OK';
+                okButton.style.cssText = 'background: #4f46e5; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; transition: background-color 0.2s;';
+                okButton.onmouseenter = () => okButton.style.backgroundColor = '#4338ca';
+                okButton.onmouseleave = () => okButton.style.backgroundColor = '#4f46e5';
+
+                okButton.onclick = () => {
+                    document.body.removeChild(alertWrapper);
+                    resolve();
+                };
+
+                alertBox.appendChild(okButton);
+                alertWrapper.appendChild(alertBox);
+                document.body.appendChild(alertWrapper);
+            });
+        }
+
         function customConfirm(message) {
             return new Promise((resolve) => {
                 const confirmWrapper = document.createElement('div');
                 confirmWrapper.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:999;';
                 
                 const confirmBox = document.createElement('div');
-                confirmBox.style.cssText = 'background: #2d3748; padding: 24px; border-radius: 8px; text-align: center; color: white;';
+                confirmBox.style.cssText = 'background: #2d3748; padding: 24px; border-radius: 8px; text-align: center; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
                 confirmBox.innerHTML = `<p style="margin-bottom: 16px;">${message}</p>`;
 
                 const yesButton = document.createElement('button');
@@ -309,14 +393,8 @@
                 noButton.textContent = 'No';
                 noButton.style.cssText = 'background: #4a5568; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;';
 
-                yesButton.onclick = () => {
-                    document.body.removeChild(confirmWrapper);
-                    resolve(true);
-                };
-                noButton.onclick = () => {
-                    document.body.removeChild(confirmWrapper);
-                    resolve(false);
-                };
+                yesButton.onclick = () => { document.body.removeChild(confirmWrapper); resolve(true); };
+                noButton.onclick = () => { document.body.removeChild(confirmWrapper); resolve(false); };
 
                 confirmBox.appendChild(yesButton);
                 confirmBox.appendChild(noButton);
@@ -325,25 +403,22 @@
             });
         }
 
-
         // --- Attach Event Listeners ---
         addSiteBtn.addEventListener('click', () => openModal());
         cancelBtn.addEventListener('click', closeModal);
         deleteSiteBtn.addEventListener('click', handleDelete);
         siteForm.addEventListener('submit', handleFormSubmit);
+        suggestNameBtn.addEventListener('click', () => {
+            const url = siteUrlInput.value.trim();
+            getSuggestedName(url);
+        });
 
         // Event delegation for edit buttons
         sitesGrid.addEventListener('click', async (e) => {
             const editButton = e.target.closest('.edit-btn');
             if (editButton) {
                 const id = editButton.dataset.id;
-                // Since we already have the data in memory from onSnapshot, we can find it.
-                // However, reading it again ensures consistency, though it's a bit slower.
-                // For simplicity here, let's find it from the rendered data.
-                // This is a bit of a shortcut. A more robust app might use a local cache/state manager.
                  const docRef = doc(db, `artifacts/${appId}/users/${userId}/sites`, id);
-                 // In a real app with a proper state manager you wouldn't re-fetch.
-                 // This is just to keep the example simple without a local state array.
                  onSnapshot(docRef, (doc) => {
                      if (doc.exists()) {
                          openModal({ id: doc.id, ...doc.data() });
@@ -365,3 +440,4 @@
     </script>
 </body>
 </html>
+
